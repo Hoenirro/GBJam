@@ -1,13 +1,5 @@
 Shader "Custom/PaletteQuantizationFullScreen"
 {
-    Properties
-    {
-        _Color0 ("Palette Color 0", Color) = (0.6196, 0.1647, 0.1686, 1)
-        _Color1 ("Palette Color 1", Color) = (0.8745, 0.6235, 0.2431, 1)
-        _Color2 ("Palette Color 2", Color) = (0.9961, 0.9569, 0.6863, 1)
-        _Color3 ("Palette Color 3", Color) = (0.2039, 0.3608, 0.4000, 1)
-    }
-
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" }
@@ -36,15 +28,8 @@ Shader "Custom/PaletteQuantizationFullScreen"
                 return o;
             }
 
-            // Camera texture
             TEXTURE2D_X(_CameraOpaqueTexture);
             SAMPLER(sampler_CameraOpaqueTexture);
-
-            // Editable palette colors
-            float4 _Color0;
-            float4 _Color1;
-            float4 _Color2;
-            float4 _Color3;
 
             float4 Frag(FSInput input) : SV_Target
             {
@@ -57,10 +42,10 @@ Shader "Custom/PaletteQuantizationFullScreen"
                 float3 inputColor = col.rgb;
 
                 float3 palette[4] = {
-                    _Color0.rgb,
-                    _Color1.rgb,
-                    _Color2.rgb,
-                    _Color3.rgb
+                    float3(0.6196, 0.1647, 0.1686),
+                    float3(0.8745, 0.6235, 0.2431),
+                    float3(0.9961, 0.9569, 0.6863),
+                    float3(0.2039, 0.3608, 0.4000)
                 };
 
                 float3 bestColor = palette[0];
