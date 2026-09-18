@@ -8,13 +8,15 @@ public class Walk : MonoBehaviour
     private Vector2 moveInput = Vector2.zero;
     public LayerMask interactMask;
 
+    [SerializeField] private GameObject MessageBox;
+    [SerializeField] private TMPro.TMP_Text MessageText;
 
     private Vector3 raycastOrigin;
     public float raycastDistance = 2f;
 
     void Start()
     {
-
+        MessageBox.SetActive(false);
     }
 
     void OnMove(InputValue value)
@@ -28,46 +30,39 @@ public class Walk : MonoBehaviour
         if (!value.isPressed)
             return;
 
-        Debug.Log("Jump button pressed");
+        //Debug.Log("Jump button pressed");
 
         // Draw the ray in the Scene view for 1 second to debug alignment and distance
-        Debug.DrawRay(raycastOrigin, transform.forward * raycastDistance, Color.red, 1f);
+        //Debug.DrawRay(raycastOrigin, transform.forward * raycastDistance, Color.red, 1f);
 
         // Cast the ray
         if (Physics.Raycast(raycastOrigin, transform.forward, out RaycastHit hit, raycastDistance, interactMask))
         {
-            // Use GetComponentInParent so child colliders (doorknobs, panels) still register the door
-            DoorBehaviour door = hit.collider.GetComponentInParent<DoorBehaviour>();
+            string hitObjectTag = hit.collider.tag;
 
-            if (door != null)
+            switch (hitObjectTag)
             {
-                if (!door.needsKey)
-                {
-                    // Get the animator from the door object containing the script
-                    Animator animator = door.GetComponent<Animator>();
-                    if (animator != null)
+                case "Door":
+                    if (hit.collider.GetComponent<DoorBehaviour>() == null)
                     {
-                        animator.SetTrigger("Open");
-                        Debug.Log("Door opened successfully.");
+                        //Debug.LogWarning("DoorBehaviour component not found on the door object.");
+                        return;
                     }
-                    else
-                    {
-                        Debug.LogWarning("DoorBehaviour found, but no Animator component attached to it.");
-                    }
-                }
-                else
-                {
-                    Debug.Log("The door is locked and requires a key.");
-                }
+                    DoorBehaviour doorBehaviour = hit.collider.GetComponent<DoorBehaviour>();
+                    MessageBox.SetActive(hit.collider.GetComponent<DoorBehaviour>().needsKey);
+                    MessageText.text = "hmmm..\n..a LOCKED Door";
+                    transform.position =
+                        (doorBehaviour.inside.position - transform.position).magnitude <
+                        (doorBehaviour.outside.position - transform.position).magnitude ?
+                        doorBehaviour.outside.position : doorBehaviour.inside.position;
+                    break;
+                case "Interactable":
+                    Debug.Log("Hit an interactable object: " + hit.collider.name);
+                    break;
+                default:
+                    Debug.Log("Hit an object with tag: " + hitObjectTag);
+                    break;
             }
-            else
-            {
-                Debug.Log($"Hit {hit.collider.name}, but it does not have a DoorBehaviour component.");
-            }
-        }
-        else
-        {
-            Debug.Log("Raycast missed all objects within range.");
         }
     }
 
